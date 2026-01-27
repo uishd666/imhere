@@ -35,11 +35,10 @@ export default function MapPage() {
   // 验证登录状态 & 加载用户列表
   useEffect(() => {
     const token = localStorage.getItem('token');
-    // TOFIX
-    // if (!token) {
-    //   router.push('/login');
-    //   return;
-    // }
+    if (!token) {
+      router.push('/login');
+      return;
+    }
 
     const fetchUsers = async () => {
       try {
@@ -55,15 +54,13 @@ export default function MapPage() {
 
   // 查询轨迹
   const handleSearch = async () => {
-    if (!selectedUser || !startTime || !endTime) {
-      alert("请完整填写用户和时间范围");
+    if (!selectedUser) {
+      alert("请完整填写用户");
       return;
     }
 
     setLoading(true);
     try {
-      // ⚠️ 这里的API接口是根据需求假设的，你需要确保后端有对应的路由
-      // 如果后端没有此接口，你需要添加它
       const res = await api.get('/locations/history', {
         params: {
           userId: selectedUser,
@@ -72,13 +69,22 @@ export default function MapPage() {
         }
       });
 
-      const data = res.data;
+      // ✅ 关键修复：提取 res.data.locations 数组
+      const locations = res.data.locations || [];
+      
+      // ✅ 类型转换：字符串转数字
+      const formattedData: LocationPoint[] = locations.map((item: any) => ({
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lng),
+        timestamp: item.timestamp
+      }));
+
       // 按时间排序
-      data.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-      
-      setPathData(data);
-      if (data.length === 0) alert("该时间段无数据");
-      
+      formattedData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      setPathData(formattedData);
+      if (formattedData.length === 0) alert("该时间段无数据");
+
     } catch (err) {
       console.error(err);
       alert("查询轨迹失败");

@@ -14,11 +14,11 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       // TOFIX
-      //   const res = await api.post('/users/login', formData);
+        const res = await api.post('/users/login', formData);
 
-      //   // 保存 Token 和用户信息
-      //   localStorage.setItem('token', res.data.token);
-      //   localStorage.setItem('user', JSON.stringify(res.data.user));
+        // 保存 Token 和用户信息
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
 
       router.push("/map"); // 跳转到地图页
     } catch (err: any) {
