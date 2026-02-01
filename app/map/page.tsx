@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import RealTimeLocation from '@/components/RealTimeLocation';
 
 // ⚠️ 动态导入地图组件，禁用 SSR
 const MapWithNoSSR = dynamic(() => import('@/components/Map'), {
@@ -31,6 +32,7 @@ export default function MapPage() {
   const [endTime, setEndTime] = useState('');
   const [pathData, setPathData] = useState<LocationPoint[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // 验证登录状态 & 加载用户列表
   useEffect(() => {
@@ -38,6 +40,11 @@ export default function MapPage() {
     if (!token) {
       router.push('/login');
       return;
+    }
+
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setCurrentUser(JSON.parse(userData));
     }
 
     const fetchUsers = async () => {
@@ -95,7 +102,12 @@ export default function MapPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* 顶部控制栏 */}
+      {currentUser && (
+        <div className="p-4 bg-white shadow-md z-10">
+          <RealTimeLocation currentUser={currentUser} />
+        </div>
+      )}
+      
       <div className="p-4 bg-white shadow-md z-10 flex flex-wrap gap-4 items-end">
         <div>
           <label className="block text-xs text-gray-500 mb-1">选择用户</label>
