@@ -9,12 +9,30 @@ dotenv.config();
 
 const app = express();
 const server = createServer(app);
+
+const authenticateSocket = async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error('Authentication error'));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.userId;
+    next();
+  } catch (error) {
+    next(new Error('Authentication error'));
+  }
+};
+
 const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
   }
 });
+
+io.use(authenticateSocket);
 
 const PORT = process.env.PORT || 3001;
 
@@ -44,11 +62,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/locations', locationRoutes);
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('User connected:', socket.id, 'User ID:', socket.userId);
 
   socket.on('join-room', (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined their room`);
+    console.log(`User ${socket.userId} joined room ${userId}`);
   });
 
   socket.on('location-update', (data) => {
