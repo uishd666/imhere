@@ -104,8 +104,9 @@ function RealTimeMap({ realTimeLocations }: { realTimeLocations: RealTimeLocatio
       style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; AutoNavi'
+        url="https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
+        // url="http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}"
       />
       
       {realTimeLocations.map((location) => (

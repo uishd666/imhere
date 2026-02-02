@@ -112,7 +112,7 @@ const MapComponent = ({ pathData }: MapProps) => {
     >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url="https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
       />
       
       {/* 自动调整视野 */}

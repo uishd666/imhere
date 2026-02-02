@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import RealTimeLocation from '@/components/RealTimeLocation';
 
 // ⚠️ 动态导入地图组件，禁用 SSR
 const MapWithNoSSR = dynamic(() => import('@/components/Map'), {
@@ -49,7 +48,7 @@ export default function MapPage() {
 
     const fetchUsers = async () => {
       try {
-        const res = await api.get('/users/all');
+        const res = await api.get('/users/all');        
         // 假设后端返回 { users: [] } 或 直接返回 []，根据你的实际API调整
         setUsers(Array.isArray(res.data) ? res.data : res.data.users || []);
       } catch (err) {
@@ -100,59 +99,96 @@ export default function MapPage() {
     }
   };
 
+  const handleRecordLocation = async () => {
+    if (!currentUser) {
+      alert("请先登录");
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("浏览器不支持地理定位");
+      return;
+    }
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          await api.post('/locations/share', {
+            lat: latitude,
+            lng: longitude
+          });
+
+          alert('位置记录成功！');
+        },
+        (error) => {
+          alert('获取位置失败: ' + error.message);
+        }
+      );
+    } catch (err: any) {
+      alert('位置记录失败: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen">
-      {currentUser && (
-        <div className="p-4 bg-white shadow-md z-10">
-          <RealTimeLocation currentUser={currentUser} />
-        </div>
-      )}
-      
-      <div className="p-4 bg-white shadow-md z-10 flex flex-wrap gap-4 items-end">
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">选择用户</label>
-          <select 
-            className="border p-2 rounded text-black min-w-[150px]"
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-          >
-            <option value="">-- 请选择 --</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>{u.username}</option>
-            ))}
-          </select>
-        </div>
+    <div className="h-screen flex flex-col">
+      <div className="bg-white shadow-md z-10">
+        <div className="p-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">历史轨迹查询</h3>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">选择用户</label>
+              <select 
+                className="border p-2 rounded text-black min-w-[150px]"
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+              >
+                <option value="">-- 请选择 --</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>{u.username}</option>
+                ))}
+              </select>
+            </div>
 
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">开始时间</label>
-          <input 
-            type="datetime-local" 
-            className="border p-2 rounded text-black"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-          />
-        </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">开始时间</label>
+              <input 
+                type="datetime-local" 
+                className="border p-2 rounded text-black"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
 
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">结束时间</label>
-          <input 
-            type="datetime-local" 
-            className="border p-2 rounded text-black"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-          />
-        </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">结束时间</label>
+              <input 
+                type="datetime-local" 
+                className="border p-2 rounded text-black"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
 
-        <button 
-          onClick={handleSearch}
-          disabled={loading}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {loading ? '查询中...' : '查看轨迹'}
-        </button>
+            <button 
+              onClick={handleSearch}
+              disabled={loading}
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {loading ? '查询中...' : '查看轨迹'}
+            </button>
+
+            <button 
+              onClick={handleRecordLocation}
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+            >
+              记录当前位置
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 地图区域 */}
       <div className="flex-1 relative z-0">
         <MapWithNoSSR pathData={pathData} />
       </div>

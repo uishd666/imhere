@@ -47,20 +47,26 @@ export default function Navbar() {
                   href="/map" 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  地图
+                  历史轨迹
                 </Link>
                 <Link 
+                  href="/realtime" 
+                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  实时共享
+                </Link>
+                {/* <Link 
                   href="/users" 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   用户
-                </Link>
-                <Link 
+                </Link> */}
+                {/* <Link 
                   href="/profile" 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   个人资料
-                </Link>
+                </Link> */}
               </div>
 
               <div className="relative">
@@ -82,21 +88,14 @@ export default function Navbar() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        地图
+                        历史轨迹
                       </Link>
                       <Link 
-                        href="/users" 
+                        href="/realtime" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        用户
-                      </Link>
-                      <Link 
-                        href="/profile" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        个人资料
+                        实时共享
                       </Link>
                       <div className="border-t border-gray-100 my-1"></div>
                     </div>
