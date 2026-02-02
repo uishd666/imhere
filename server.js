@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const db = require('./config/database');
+const RealtimeSession = require('./models/RealtimeSession');
 
 dotenv.config();
 
@@ -57,9 +59,11 @@ app.get('/', (req, res) => {
 
 const userRoutes = require('./routes/users');
 const locationRoutes = require('./routes/locations');
+const realtimeRoutes = require('./routes/realtime');
 
 app.use('/api/users', userRoutes);
 app.use('/api/locations', locationRoutes);
+app.use('/api/realtime', realtimeRoutes);
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id, 'User ID:', socket.userId);
@@ -69,13 +73,48 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.userId} joined room ${userId}`);
   });
 
-  socket.on('location-update', (data) => {
-    socket.to(data.targetUserId).emit('location-received', {
-      fromUserId: data.fromUserId,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      timestamp: data.timestamp
-    });
+  socket.on('location-update', async (data) => {
+    try {
+      const { latitude, longitude, timestamp } = data;
+      const userId = socket.userId;
+      
+      const hasActiveSession = await RealtimeSession.hasActiveSession(userId, data.targetUserId);
+      if (!hasActiveSession) {
+        console.log(`No active session between users ${userId} and ${data.targetUserId}`);
+        return;
+      }
+      
+      socket.to(data.targetUserId).emit('location-received', {
+        fromUserId: userId,
+        latitude,
+        longitude,
+        timestamp: timestamp || new Date().toISOString()
+      });
+      
+      console.log(`Location update from user ${userId} to user ${data.targetUserId}`);
+    } catch (error) {
+      console.error('Location update error:', error);
+    }
+  });
+
+  socket.on('join-realtime-session', async (data) => {
+    try {
+      const { targetUserId } = data;
+      const userId = socket.userId;
+      
+      const hasActiveSession = await RealtimeSession.hasActiveSession(userId, targetUserId);
+      if (!hasActiveSession) {
+        console.log(`No active session between users ${userId} and ${targetUserId}`);
+        return;
+      }
+      
+      socket.join(`session_${userId}_${targetUserId}`);
+      socket.join(`session_${targetUserId}_${userId}`);
+      
+      console.log(`User ${userId} joined realtime session with ${targetUserId}`);
+    } catch (error) {
+      console.error('Join realtime session error:', error);
+    }
   });
 
   socket.on('disconnect', () => {
