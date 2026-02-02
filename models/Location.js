@@ -3,7 +3,7 @@ const db = require('../config/database');
 class Location {
   static async create(userId, lat, lng) {
     const sql = 'INSERT INTO locations (user_id, lat, lng) VALUES (?, ?, ?)';
-    const [result] = await db.query(sql, [userId, lat, lng]);
+    const result = await db.query(sql, [userId, lat, lng]);
     return await this.findById(result.insertId);
   }
 

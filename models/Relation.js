@@ -3,7 +3,7 @@ const db = require('../config/database');
 class Relation {
   static async create(watcherId, targetId) {
     const sql = 'INSERT INTO relations (watcher_id, target_id) VALUES (?, ?)';
-    const [result] = await db.query(sql, [watcherId, targetId]);
+    const result = await db.query(sql, [watcherId, targetId]);
     return await this.findById(result.insertId);
   }
 
@@ -43,7 +43,7 @@ class Relation {
 
   static async remove(watcherId, targetId) {
     const sql = 'DELETE FROM relations WHERE watcher_id = ? AND target_id = ?';
-    const [result] = await db.query(sql, [watcherId, targetId]);
+    const result = await db.query(sql, [watcherId, targetId]);
     return result.affectedRows > 0;
   }
 
