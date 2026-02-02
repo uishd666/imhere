@@ -78,7 +78,7 @@ class Location {
 
   static async deleteOldLocations(hoursOld = 24) {
     const sql = 'DELETE FROM locations WHERE created_at < DATE_SUB(NOW(), INTERVAL ? HOUR)';
-    const [result] = await db.query(sql, [hoursOld]);
+    const result = await db.query(sql, [hoursOld]);
     return result.affectedRows;
   }
 }
