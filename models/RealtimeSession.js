@@ -3,7 +3,8 @@ const db = require('../config/database');
 class RealtimeSession {
   static async create(initiatorId, targetId) {
     const sql = 'INSERT INTO realtime_sessions (initiator_id, target_id, status) VALUES (?, ?, ?)';
-    const [result] = await db.query(sql, [initiatorId, targetId, 'pending']);
+    const result = await db.query(sql, [initiatorId, targetId, 'pending']);
+    console.log('Query result:', result); 
     return await this.findById(result.insertId);
   }
 
@@ -60,7 +61,7 @@ class RealtimeSession {
 
   static async updateStatus(sessionId, status) {
     const sql = 'UPDATE realtime_sessions SET status = ? WHERE id = ?';
-    const [result] = await db.query(sql, [status, sessionId]);
+    const result = await db.query(sql, [status, sessionId]);
     return result.affectedRows > 0;
   }
 

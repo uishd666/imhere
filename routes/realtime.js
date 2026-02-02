@@ -202,4 +202,28 @@ router.get('/pending', auth, async (req, res) => {
   }
 });
 
+router.delete('/all', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const sessions = await RealtimeSession.findByUserId(userId);
+    
+    let deletedCount = 0;
+    for (const session of sessions) {
+      if (session.status !== 'ended') {
+        await RealtimeSession.endSession(session.id);
+        deletedCount++;
+      }
+    }
+
+    res.json({
+      message: 'All sessions cleared successfully',
+      clearedCount: deletedCount,
+      totalSessions: sessions.length
+    });
+  } catch (error) {
+    console.error('Clear all sessions error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
