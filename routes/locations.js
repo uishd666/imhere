@@ -216,7 +216,10 @@ router.get('/followers', auth, async (req, res) => {
 
 router.get('/history', auth, async (req, res) => {
   try {
-    const { userId, startTime, endTime } = req.query;
+    let { userId, startTime, endTime, start, end } = req.query;
+    // Support both start/end and startTime/endTime parameter names
+    if (start && !startTime) startTime = start;
+    if (end && !endTime) endTime = end;
     const currentUserId = req.user.id;
 
     if (!userId) {

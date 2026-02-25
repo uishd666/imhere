@@ -61,14 +61,34 @@ class Location {
     `;
     const params = [userId];
 
-    if (startTime) {
-      sql += ' AND l.created_at >= ?';
-      params.push(startTime);
+    if (startTime && startTime.trim() !== '') {
+      try {
+        // Convert ISO string to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
+        const date = new Date(startTime);
+        if (isNaN(date.getTime())) {
+          throw new Error('Invalid startTime date');
+        }
+        const mysqlStartTime = date.toISOString().replace('T', ' ').split('.')[0];
+        sql += ' AND l.created_at >= ?';
+        params.push(mysqlStartTime);
+      } catch (error) {
+        // If date conversion fails, skip the filter
+        console.warn('Invalid startTime parameter:', startTime, error.message);
+      }
     }
 
-    if (endTime) {
-      sql += ' AND l.created_at <= ?';
-      params.push(endTime);
+    if (endTime && endTime.trim() !== '') {
+      try {
+        const date = new Date(endTime);
+        if (isNaN(date.getTime())) {
+          throw new Error('Invalid endTime date');
+        }
+        const mysqlEndTime = date.toISOString().replace('T', ' ').split('.')[0];
+        sql += ' AND l.created_at <= ?';
+        params.push(mysqlEndTime);
+      } catch (error) {
+        console.warn('Invalid endTime parameter:', endTime, error.message);
+      }
     }
 
     sql += ' ORDER BY l.created_at DESC';
